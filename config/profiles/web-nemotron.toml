@@ -1,0 +1,41 @@
+# Web edition with Nemotron 3 Super 120B on slot A: Planner, Reviewer failure analysis and escalations.
+#   A = Nemotron 3 Super 120B-A12B (thinking on)   B = Reflection Beam (code)   C = Nemotron 3 Nano
+# Token Factory catalog (2026-10-30): nvidia/nemotron-3-super-120b-a12b, fp4, 262,144-token context, tools +
+# reasoning, $0.30 in / $0.90 out per 1M ($0.06 cached input). Compare with web-quality (Ultra on A) using
+# scripts/bench_planner_reviewer.py before switching .env.
+# Use with: AF_ROUTER_CONFIG=config/profiles/web-nemotron.toml
+#
+# Quality-first limits (user decision 2026-10-30: "money is not the issue, the quality is"). A run's own budget
+# (the website sends max_tokens / max_cost_usd / max_premium_cost_usd) still applies on top of these.
+# Output sizes: Beam, Super and Nano all accepted max_tokens=131072 on Token Factory (probed 2026-10-30); 65,536
+# fits a large frontend in one reply (24,576 truncated an 11k-character arcade prompt, run_24da16a214f7).
+
+extends = "web-quality.toml"
+
+[budget]
+run_cost_limit_usd = 10.0
+premium_cost_limit_usd = 5.0
+run_token_limit = 5_000_000
+premium_token_limit = 2_000_000
+
+[slots.A]
+model_id = "nvidia/nemotron-3-super-120b-a12b"
+context_window = 262144
+max_output_tokens = 65536
+reasoning = 0.90
+coding = 0.82
+price_input_per_1m = 0.30
+price_output_per_1m = 0.90
+price_verified = true
+price_source = "Token Factory /v1/models?verbose=true on this account, 2026-10-30"
+reasoning_overhead = 3.0
+timeout_s = 1200.0
+extra_body = { chat_template_kwargs = { enable_thinking = true } }
+
+[slots.B]
+max_output_tokens = 65536
+timeout_s = 900.0
+
+[slots.C]
+max_output_tokens = 16384
+timeout_s = 240.0

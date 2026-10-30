@@ -1,0 +1,109 @@
+# AgentForge model router configuration.
+#
+# Exactly three logical slots. Agents never name a model; they describe the task
+# and the router picks a slot. Swap models here (or via env vars, see
+# .env.example) without touching agent code.
+#
+# PRICING RULES
+#   * Never assume a model is free because it is open-weight.
+#   * billing = "paid"             -> every token costs price_* (pay-as-you-go).
+#   * billing = "prepaid_credits"  -> tokens cost price_*, drawn from [account].credit_balance_usd.
+#   * billing = "free_allowance"   -> zero incremental cost ONLY up to free_allowance_tokens,
+#                                     then price_* (or unavailable if price is unset).
+#   * Leave price_* unset when you do not have a confirmed number. The router then
+#     tracks tokens only and reports cost as "unknown" instead of inventing one.
+#   * price_verified = true only after checking the Token Factory pricing page /
+#     your account. Unverified prices are shown as estimates on the dashboard.
+#
+# Capability scores (0..1) are routing priors. Replace them with bake-off results (B13).
+
+[provider]
+base_url = "https://api.tokenfactory.nebius.com/v1"   # [VERIFY] regional URL for your account
+api_key_env = "NEBIUS_API_KEY"
+
+[account]
+# Hackathon credits, if any. Unset = unknown; router then relies on per-run limits only.
+# credit_balance_usd = 50.0
+credit_low_fraction = 0.30          # risk register trigger: "credit under 30%"
+
+[budget]                            # per run
+run_token_limit = 2_000_000
+run_cost_limit_usd = 5.00           # only enforced against calls with a known price
+premium_cost_limit_usd = 2.00       # slot A spend cap per run (known prices)
+premium_token_limit = 400_000       # slot A token cap per run (always enforced)
+premium_reserve_fraction = 0.25     # last 25% of premium budget kept for critical/escalated tasks
+low_budget_fraction = 0.20          # below this much run budget left -> low-budget mode
+
+[policy]
+escalate_to_premium_after_failures = 2   # B -> A after N failed task attempts
+promote_economy_after_failures = 1       # C -> B after N failed task attempts
+# Expected cost of a failure that leaks downstream (wasted build/review cycles), USD.
+# Used to decide whether premium is worth it: premium wins when it lowers
+# cost/p_success + (1 - p_success) * downstream_failure_cost.
+downstream_failure_cost_usd = { low = 0.0, medium = 0.02, high = 0.10, critical = 0.40 }
+
+[retry]
+max_attempts_per_call = 4           # provider-level attempts across all slots for ONE call
+same_slot_transient_retries = 1     # retry the same model once on 5xx/timeout, then move on
+backoff_base_s = 1.0
+backoff_max_s = 20.0
+max_rate_limit_wait_s = 15.0        # if every slot is rate-limited, wait at most this long once
+max_structured_repairs = 1          # re-ask once with the validation error before moving on
+
+[health]
+failure_threshold = 3               # consecutive failures -> circuit open
+cooldown_s = 60.0                   # open circuit duration before a half-open probe
+slow_s_per_1k_tokens = 30.0         # seconds per 1k generated tokens above this -> slot deprioritised
+default_rate_limit_cooldown_s = 20.0
+
+# ---------------------------------------------------------------------------
+# Slot A: premium reasoning (planning, contracts, critical review, hard debugging)
+[slots.A]
+model_id = "nvidia/Nemotron-3-Ultra-550b-a55b"   # verified in account catalog 2026-10-28
+enabled = true
+context_window = 1048576
+max_output_tokens = 16384
+reasoning = 0.95
+coding = 0.85
+billing = "prepaid_credits"
+price_input_per_1m = 1.0
+price_output_per_1m = 3.0
+price_verified = true
+price_source = "Token Factory /v1/models?verbose=true on this account, 2026-10-28"
+supports_json_schema = false                    # [VERIFY] set true after testing response_format json_schema
+supports_json_mode = true
+timeout_s = 240.0
+
+# Slot B: main coding model (backend/frontend code, routine debugging, integration)
+[slots.B]
+model_id = "nvidia/nemotron-3-super-120b-a12b"   # verified in account catalog 2026-10-28
+enabled = true
+context_window = 262144
+max_output_tokens = 16384
+reasoning = 0.80
+coding = 0.80
+billing = "prepaid_credits"
+price_input_per_1m = 0.3
+price_output_per_1m = 0.9
+price_verified = true
+price_source = "Token Factory /v1/models?verbose=true on this account, 2026-10-28"
+supports_json_schema = false
+supports_json_mode = true
+timeout_s = 180.0
+
+# Slot C: economy (log summaries, error classification, context extraction, commit messages)
+[slots.C]
+model_id = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"   # verified in account catalog 2026-10-28
+enabled = true
+context_window = 262144
+max_output_tokens = 8192
+reasoning = 0.55
+coding = 0.50
+billing = "prepaid_credits"
+price_input_per_1m = 0.06
+price_output_per_1m = 0.24
+price_verified = true
+price_source = "Token Factory /v1/models?verbose=true on this account, 2026-10-28"
+supports_json_schema = false
+supports_json_mode = true
+timeout_s = 60.0

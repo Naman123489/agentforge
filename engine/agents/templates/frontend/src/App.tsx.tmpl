@@ -1,0 +1,14 @@
+// AGENTFORGE_TEMPLATE: replace this file with the application. Keep the imports you need.
+import { useHashRoute } from "./lib/useHashRoute";
+import { Card, EmptyState } from "./components/ui";
+
+export default function App() {
+  const [route] = useHashRoute("home");
+  return (
+    <main className="container">
+      <Card title="{title}">
+        <EmptyState title={`Route: ${route}`}>The Frontend agent replaces this screen.</EmptyState>
+      </Card>
+    </main>
+  );
+}

@@ -1,0 +1,13 @@
+*.pyc
+.env
+.pytest_cache/
+.venv/
+__pycache__/
+data/
+node_modules/
+dist/
+.ruff_cache/
+.agentforge/
+*.zip
+.env.*
+!.env.example

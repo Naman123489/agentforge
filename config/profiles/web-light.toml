@@ -1,0 +1,63 @@
+# Web edition: lighter Nemotron models on Nebius Token Factory (hackathon rule H1).
+# Same trick as the Spark profiles (one model, three reasoning modes), plus Nano for C.
+# Prices from this account's /v1/models catalog, 2026-10-28. Verified on 2026-10-29: thinking toggle,
+# separate reasoning_content, json_object and json_schema (also with thinking on) all work.
+# Use with: AF_MODE=web   (needs NEBIUS_API_KEY and credits)
+
+extends = "../models.toml"
+
+[account]
+credit_low_fraction = 0.30
+
+[budget]                       # per run (one website visitor build)
+run_token_limit = 1_500_000
+run_cost_limit_usd = 0.30      # hard stop: one build can never cost more than this
+premium_cost_limit_usd = 0.10
+premium_token_limit = 300_000
+
+[slots.A]
+reasoning_overhead = 3.0   # thinking tokens are billed/slow
+supports_json_schema = true
+price_verified = true
+model_id = "nvidia/Nemotron-3_5-Lightning"
+context_window = 1048576
+max_output_tokens = 32768
+reasoning = 0.80
+coding = 0.72
+price_input_per_1m = 0.06
+price_output_per_1m = 0.24
+temperature = 1.0
+top_p = 0.95
+extra_body = { chat_template_kwargs = { enable_thinking = true } }
+
+[slots.B]
+reasoning_overhead = 1.0   # thinking off
+supports_json_schema = true
+price_verified = true
+model_id = "nvidia/Nemotron-3_5-Lightning"
+context_window = 1048576
+max_output_tokens = 24576
+reasoning = 0.72
+coding = 0.70
+price_input_per_1m = 0.06
+price_output_per_1m = 0.24
+temperature = 0.6
+top_p = 0.95
+# Thinking OFF for code generation: with low-effort thinking, Lightning narrated its plan into the
+# answer and hit max_tokens before writing files (live test 2026-10-29). Escalation to A thinks.
+extra_body = { chat_template_kwargs = { enable_thinking = false } }
+
+[slots.C]
+reasoning_overhead = 1.0   # thinking tokens are billed/slow
+supports_json_schema = true
+price_verified = true
+model_id = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"
+context_window = 262144
+max_output_tokens = 8192
+reasoning = 0.55
+coding = 0.50
+price_input_per_1m = 0.06
+price_output_per_1m = 0.24
+temperature = 0.6
+top_p = 0.95
+extra_body = { chat_template_kwargs = { enable_thinking = false } }

@@ -1,0 +1,45 @@
+# Web edition, quality variant: stronger coders on Nebius Token Factory.
+#   A = Nemotron 3 Ultra (escalations, planning)   B = Reflection Beam (code)   C = Nemotron 3 Nano
+# Why: live Backend-agent runs on 2026-10-29 showed Lightning (30B, thinking off) introducing a new bug on
+# almost every fix attempt. A stronger model that passes in fewer attempts can cost less overall.
+# Prices from this account's catalog (2026-10-30): Ultra $1.00/$3.00, Beam $0.25/$1.00, Nano $0.06/$0.24.
+# Use with: AF_ROUTER_CONFIG=config/profiles/web-quality.toml
+
+extends = "web-light.toml"
+
+[budget]
+run_cost_limit_usd = 0.50
+premium_cost_limit_usd = 0.25
+
+# Live frontend runs (2026-10-29): slot-B repairs fix most TypeScript errors (7 -> 1), so give B one more
+# repair before paying for Ultra (~8x per call). The backend keeps the default threshold of 2.
+[policy]
+escalate_to_premium_after_failures_by_agent = { frontend = 3 }
+
+[slots.A]
+model_id = "nvidia/Nemotron-3-Ultra-550b-a55b"
+context_window = 1048576
+max_output_tokens = 32768
+reasoning = 0.95
+coding = 0.88
+price_input_per_1m = 1.00
+price_output_per_1m = 3.00
+reasoning_overhead = 3.0
+extra_body = { chat_template_kwargs = { enable_thinking = true } }
+
+[slots.B]
+# Benchmark 2026-10-30 (scripts/bench_frontend_models.py, todo + recipe-box contracts, no escalation):
+#   frontend: Beam passed 2/2 on the FIRST attempt; Super needed 3 and 2 attempts; gpt-oss-120b 1 and 2 (cheapest,
+#   thinner UI); Muse Spark 1 and 2 (5-8x cost); Nemotron-3.5-Super-VL 1/2; Hermes-4-405B 0/2.
+#   backend: Beam 2 and 4 attempts vs Super 3 and 2 (about even).
+# Previous B: nvidia/nemotron-3-super-120b-a12b ($0.30/$0.90, enable_thinking=false).
+model_id = "reflection/beam"
+context_window = 1048576
+max_output_tokens = 24576
+reasoning = 0.85
+coding = 0.86
+price_input_per_1m = 0.25
+price_output_per_1m = 1.00
+price_source = "Token Factory /v1/models (2026-10-30)"
+reasoning_overhead = 1.0
+extra_body = {}   # Nemotron's chat_template_kwargs do not apply to Beam

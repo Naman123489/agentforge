@@ -1,0 +1,102 @@
+openapi: 3.1.0
+info:
+  title: Mini Arcade API
+  version: 1.0.0
+  description: Accounts, score submission and per-game leaderboards for Snake, 2048 and Memory Match.
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+  schemas:
+    Credentials:
+      type: object
+      required: [username, password]
+      properties:
+        username: {type: string, minLength: 3, example: demo_user}
+        password: {type: string, minLength: 6, example: demo-pass-123}
+    Session:
+      type: object
+      required: [token, username]
+      properties:
+        token: {type: string}
+        username: {type: string}
+    ScoreIn:
+      type: object
+      required: [game, score]
+      properties:
+        game: {type: string, enum: [snake, "2048", memory]}
+        score: {type: integer, minimum: 0, example: 120}
+    Score:
+      type: object
+      required: [id, username, game, score]
+      properties:
+        id: {type: integer}
+        username: {type: string}
+        game: {type: string}
+        score: {type: integer}
+    LeaderboardRow:
+      type: object
+      required: [username, game, score]
+      properties:
+        username: {type: string}
+        game: {type: string}
+        score: {type: integer}
+paths:
+  /api/register:
+    post:
+      summary: Create an account and return a session token (409 if the username is taken)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/Credentials"}
+      responses:
+        "200":
+          description: created
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Session"}
+  /api/login:
+    post:
+      summary: Log in and return a session token (401 on bad credentials)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/Credentials"}
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Session"}
+  /api/scores:
+    post:
+      summary: Submit a score for the logged-in user (401 without a valid token, 400 for unknown game)
+      security: [{bearer: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ScoreIn"}
+      responses:
+        "200":
+          description: saved
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Score"}
+  /api/leaderboard:
+    get:
+      summary: Best score per user for one game, highest first
+      parameters:
+        - {name: game, in: query, required: true, schema: {type: string, enum: [snake, "2048", memory]}}
+        - {name: limit, in: query, required: false, schema: {type: integer, default: 10}}
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: "#/components/schemas/LeaderboardRow"}

@@ -1,0 +1,64 @@
+# DGX Spark, one model: Nemotron 3.5 Lightning 30B-A3B (NVFP4 + DSpark draft).
+# RECOMMENDED for development: fits easily in 128 GB, fastest on Spark, long context.
+#
+# One loaded model fills all three slots; the slots differ by reasoning mode:
+#   A = full thinking, B = low-effort thinking, C = thinking off.
+# Serve with: deploy/spark/serve.sh lightning      (port 8001)
+# Use with:   AF_ROUTER_CONFIG=config/profiles/spark-lightning.toml
+#             SPARK_HOST=<spark ip>   (omit when AgentForge runs on the Spark itself)
+
+extends = "../models.toml"
+
+[provider]
+requires_api_key = false
+
+[budget]                      # local: $0 per token, so tokens (= GPU time) are the real budget
+run_token_limit = 3_000_000
+run_cost_limit_usd = 0.0      # nothing here should ever cost money
+premium_cost_limit_usd = 0.0
+premium_token_limit = 600_000
+
+[slots.A]
+reasoning_overhead = 3.0   # thinking tokens are billed/slow
+model_id = "nvidia/nemotron-3.5-lightning"   # --served-model-name in serve.sh
+base_url = "http://${SPARK_HOST}:8001/v1"
+billing = "local"
+context_window = 262144                     # = --max-model-len in serve.sh
+max_output_tokens = 32768                   # thinking tokens count against this
+reasoning = 0.80
+coding = 0.72
+temperature = 1.0                           # model card: 1.0 / 0.95 for reasoning
+top_p = 0.95
+supports_json_schema = true                 # [VERIFY] with scripts/verify_models.py
+timeout_s = 900.0
+extra_body = { chat_template_kwargs = { enable_thinking = true } }
+
+[slots.B]
+reasoning_overhead = 1.5   # thinking tokens are billed/slow
+model_id = "nvidia/nemotron-3.5-lightning"
+base_url = "http://${SPARK_HOST}:8001/v1"
+billing = "local"
+context_window = 262144
+max_output_tokens = 24576
+reasoning = 0.72
+coding = 0.70
+temperature = 0.6                           # model card: 0.6 / 0.95 for tool calling
+top_p = 0.95
+supports_json_schema = true
+timeout_s = 600.0
+extra_body = { chat_template_kwargs = { enable_thinking = true, low_effort = true } }
+
+[slots.C]
+reasoning_overhead = 1.0   # thinking tokens are billed/slow
+model_id = "nvidia/nemotron-3.5-lightning"
+base_url = "http://${SPARK_HOST}:8001/v1"
+billing = "local"
+context_window = 262144
+max_output_tokens = 8192
+reasoning = 0.55
+coding = 0.55
+temperature = 0.6
+top_p = 0.95
+supports_json_schema = true
+timeout_s = 180.0
+extra_body = { chat_template_kwargs = { enable_thinking = false } }

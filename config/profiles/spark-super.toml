@@ -1,0 +1,29 @@
+# DGX Spark, one model: Nemotron 3 Super 120B-A12B (NVFP4 + MTP draft).
+# Best quality that fits on one Spark, but uses ~90% of memory and decodes at
+# roughly 15-23 tokens/s, so a full arcade build is slow. Same three-mode trick:
+#   A = full thinking, B = low-effort thinking, C = thinking off.
+# Serve with: deploy/spark/serve.sh super          (port 8000)
+# Use with:   AF_ROUTER_CONFIG=config/profiles/spark-super.toml
+
+extends = "spark-lightning.toml"
+
+[slots.A]
+model_id = "nvidia/nemotron-3-super"
+base_url = "http://${SPARK_HOST}:8000/v1"
+reasoning = 0.90
+coding = 0.82
+timeout_s = 1800.0
+
+[slots.B]
+model_id = "nvidia/nemotron-3-super"
+base_url = "http://${SPARK_HOST}:8000/v1"
+reasoning = 0.82
+coding = 0.80
+timeout_s = 1200.0
+
+[slots.C]
+model_id = "nvidia/nemotron-3-super"
+base_url = "http://${SPARK_HOST}:8000/v1"
+reasoning = 0.70
+coding = 0.68
+timeout_s = 600.0

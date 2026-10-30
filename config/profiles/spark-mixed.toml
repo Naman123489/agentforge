@@ -1,0 +1,25 @@
+# DGX Spark, two models at once (EXPERIMENTAL - memory is very tight):
+#   A, B = Nemotron 3 Super (port 8000)   C = Nemotron 3.5 Lightning (port 8001)
+# Weights alone are ~80 GB + ~22 GB of the 128 GB, so both servers run with
+# small KV caches, shorter context and no speculative decoding.
+# Serve with: deploy/spark/serve.sh mixed
+# Use with:   AF_ROUTER_CONFIG=config/profiles/spark-mixed.toml
+# If the second server fails to start (not enough free memory), use spark-lightning.
+
+extends = "spark-super.toml"
+
+[slots.A]
+context_window = 65536
+max_output_tokens = 24576
+
+[slots.B]
+context_window = 65536
+max_output_tokens = 16384
+
+[slots.C]
+model_id = "nvidia/nemotron-3.5-lightning"
+base_url = "http://${SPARK_HOST}:8001/v1"
+context_window = 32768
+reasoning = 0.55
+coding = 0.55
+timeout_s = 180.0

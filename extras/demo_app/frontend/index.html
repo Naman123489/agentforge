@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini Arcade</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Mini Arcade</h1>
+    <div id="auth">
+      <span id="who"></span>
+      <form id="auth-form">
+        <input id="username" placeholder="username" autocomplete="username">
+        <input id="password" type="password" placeholder="password" autocomplete="current-password">
+        <button type="submit" data-mode="login">Log in</button>
+        <button type="submit" data-mode="register">Sign up</button>
+      </form>
+      <button id="logout" hidden>Log out</button>
+    </div>
+  </header>
+  <nav>
+    <button class="tab active" data-game="snake">Snake</button>
+    <button class="tab" data-game="2048">2048</button>
+    <button class="tab" data-game="memory">Memory Match</button>
+  </nav>
+  <main>
+    <section id="game-snake" class="game">
+      <canvas id="snake-canvas" width="400" height="400"></canvas>
+      <p>Arrow keys to move. Score: <b id="snake-score">0</b> <button id="snake-start">Start</button></p>
+    </section>
+    <section id="game-2048" class="game" hidden>
+      <div id="board-2048"></div>
+      <p>Arrow keys to slide. Score: <b id="score-2048">0</b> <button id="new-2048">New game</button>
+        <button id="submit-2048">Submit score</button></p>
+    </section>
+    <section id="game-memory" class="game" hidden>
+      <div id="memory-grid"></div>
+      <p>Moves: <b id="memory-moves">0</b> <button id="memory-new">New game</button></p>
+    </section>
+    <aside>
+      <h2>Leaderboard</h2>
+      <ol id="leaderboard"></ol>
+      <p id="message"></p>
+    </aside>
+  </main>
+  <script src="api.js"></script>
+  <script src="snake.js"></script>
+  <script src="game2048.js"></script>
+  <script src="memory.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

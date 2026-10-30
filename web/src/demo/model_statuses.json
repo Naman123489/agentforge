@@ -1,0 +1,35 @@
+[
+ {
+  "slot": "premium",
+  "model_id": "nvidia/Nemotron-3-Ultra-550b-a55b",
+  "role": "premium reasoning: planning, contracts, critical review, escalations",
+  "enabled": true,
+  "health": "unknown",
+  "supports_tools": null,
+  "supports_structured_output": true,
+  "context_window": 1048576,
+  "price_status": "verified"
+ },
+ {
+  "slot": "coding",
+  "model_id": "nvidia/nemotron-3-super-120b-a12b",
+  "role": "main coding: backend/frontend code, debugging, test repair",
+  "enabled": true,
+  "health": "unknown",
+  "supports_tools": null,
+  "supports_structured_output": true,
+  "context_window": 262144,
+  "price_status": "verified"
+ },
+ {
+  "slot": "economy",
+  "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+  "role": "economy: log summaries, error classification, commit messages",
+  "enabled": true,
+  "health": "unknown",
+  "supports_tools": null,
+  "supports_structured_output": true,
+  "context_window": 262144,
+  "price_status": "verified"
+ }
+]

@@ -1,0 +1,198 @@
+/* Intro experience (components/intro). Black stage, monochrome brand reveal, then a progressive homepage reveal. */
+
+.intro-overlay { position: fixed; inset: 0; z-index: 100; color: #fff; overflow: hidden; }
+.intro-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, #0e0e10 0%, #050505 70%);
+  transition: opacity 1000ms cubic-bezier(0.4, 0, 0.2, 1) 280ms;
+}
+[data-intro-phase="handoff"] .intro-bg { opacity: 0; }
+[data-intro-phase="handoff"] .intro-overlay { pointer-events: none; }
+
+.intro-stage { position: absolute; inset: 0; transition: opacity 800ms ease; }
+.intro-stage-out { opacity: 0; pointer-events: none; }
+.intro-3d { position: absolute; inset: 0; outline: none; }
+
+/* "Click to enter" */
+.intro-hint {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 10px 16px; border-radius: 999px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.42em; text-indent: 0.42em; text-transform: uppercase;
+  color: rgb(255 255 255 / 0.62); white-space: nowrap; transition: opacity 900ms ease, outline-color 200ms;
+  outline: 1px solid transparent; outline-offset: 2px;
+}
+.intro-hint::after {
+  content: ""; width: 28px; height: 1px; background: rgb(255 255 255 / 0.5);
+  animation: intro-breathe 2.4s ease-in-out infinite;
+}
+.intro-hint-3d {
+  position: absolute; left: 50%; bottom: max(8vh, 40px); transform: translateX(-50%);
+  opacity: 0; pointer-events: none;
+}
+.intro-hint-on { opacity: 1; }
+@media (max-aspect-ratio: 1/1) { .intro-hint-3d { bottom: 22vh; } }
+.intro-3d:focus-visible .intro-hint, .intro-fallback:focus-visible .intro-hint { outline-color: rgb(255 255 255 / 0.55); }
+
+@keyframes intro-breathe {
+  0%, 100% { opacity: 0.25; transform: scaleX(0.6); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+/* Non-WebGL computer */
+.intro-fallback {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(28px, 7vh, 64px); border: 0; background: transparent; color: inherit; cursor: pointer; outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.intro-fallback .intro-hint { opacity: 0; animation: intro-fade-in 900ms ease 900ms forwards; }
+.intro-fallback-on { cursor: default; }
+.intro-fallback-on .intro-hint { animation: none; opacity: 0; }
+.intro-fb-rig {
+  position: relative; display: block; width: min(80vw, 520px); aspect-ratio: 520 / 420;
+  animation: intro-emerge 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) both, intro-idle 7s ease-in-out 1.6s infinite;
+  transition: transform 650ms cubic-bezier(0.7, 0, 0.2, 1);
+}
+.intro-fb-rig::after {
+  content: ""; position: absolute; left: 8%; right: 8%; bottom: -4%; height: 10%;
+  background: radial-gradient(ellipse at center, rgb(255 255 255 / 0.07), transparent 70%);
+}
+.intro-fb-monitor {
+  position: absolute; left: 0; right: 0; top: 0; height: 66%; display: block; padding: 2.2%;
+  border-radius: 14px; background: linear-gradient(150deg, #212226 0%, #0b0b0c 50%, #050506 100%);
+  box-shadow: 0 0 0 1.5px #8e9095, inset 0 1px 0 rgb(255 255 255 / 0.22), 0 40px 80px -24px rgb(0 0 0 / 0.95);
+}
+.intro-fb-screen {
+  position: relative; display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 7px;
+  background: radial-gradient(ellipse 50% 45% at 50% 50%, rgb(255 255 255 / 0.07), transparent 70%),
+    linear-gradient(140deg, #18191c, #000 70%);
+  transition: background 500ms ease, box-shadow 600ms ease;
+}
+.intro-fb-screen::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 45%, rgb(255 255 255 / 0.05) 52%, transparent 60%);
+}
+.intro-fb-neck {
+  position: absolute; left: 50%; top: 64%; width: 9%; height: 22%; transform: translateX(-50%); display: block;
+  background: linear-gradient(90deg, #7d7f84, #e3e4e7 45%, #9a9ca1); border-radius: 0 0 4px 4px;
+}
+.intro-fb-base {
+  position: absolute; left: 50%; top: 85%; width: 30%; height: 2.6%; transform: translateX(-50%); display: block;
+  background: linear-gradient(180deg, #e6e7ea, #8e9095); border-radius: 6px;
+}
+.intro-fb-keyboard {
+  position: absolute; left: 50%; top: 92%; width: 62%; height: 7%; transform: translateX(-50%) perspective(400px) rotateX(48deg);
+  display: block; border-radius: 6px; background:
+    repeating-linear-gradient(90deg, #17181a 0 5.4%, transparent 5.4% 7%) 3% 25% / 94% 50% no-repeat,
+    linear-gradient(180deg, #dcdde0, #8e9095);
+}
+.intro-fallback-on .intro-fb-rig { transform: scale(1.14) translateY(3%); }
+.intro-fallback-on .intro-fb-screen { background: #f6f6f3; box-shadow: 0 0 90px 24px rgb(255 255 255 / 0.32); }
+
+@keyframes intro-emerge {
+  from { opacity: 0; filter: brightness(0.2); translate: 0 14px; }
+  to { opacity: 1; filter: none; translate: 0 0; }
+}
+@keyframes intro-idle {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -6px; }
+}
+@keyframes intro-fade-in { to { opacity: 1; } }
+
+/* Brand reveal */
+.intro-brand {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  padding: 0 16px; pointer-events: none;
+}
+.intro-brand::before {
+  /* light streak the mark condenses out of */
+  content: ""; position: absolute; left: 50%; top: 50%; width: 2px; height: 2px; margin: -1px 0 0 -1px;
+  background: #fff; border-radius: 2px; box-shadow: 0 0 24px 6px rgb(255 255 255 / 0.6);
+  animation: intro-streak 900ms cubic-bezier(0.5, 0, 0.2, 1) both;
+}
+.intro-mark {
+  position: relative; flex: none; width: clamp(56px, 13vw, 108px); aspect-ratio: 1; color: #fff;
+  transition: transform 950ms cubic-bezier(0.7, 0, 0.2, 1), color 800ms ease 150ms;
+}
+.intro-mark svg {
+  display: block; overflow: visible;
+  animation: intro-mark-settle 1300ms cubic-bezier(0.2, 0.8, 0.2, 1) 250ms both;
+  transition: opacity 260ms ease 950ms;
+}
+.intro-shard {
+  transform-box: view-box; transform-origin: 60px 60px;
+  animation: intro-shard-in 900ms cubic-bezier(0.2, 0.9, 0.25, 1.05) both;
+}
+.intro-shard-l { animation-delay: 300ms; --r: -28deg; --dx: 10px; }
+.intro-shard-r { animation-delay: 420ms; --r: 24deg; --dx: -10px; }
+.intro-shard-c { animation-delay: 540ms; --r: 0deg; --dx: 0px; }
+
+.intro-word-clip {
+  display: grid; grid-template-columns: 0fr;
+  animation: intro-word-open 950ms cubic-bezier(0.65, 0, 0.25, 1) 1350ms both;
+}
+.intro-word-mask { min-width: 0; overflow: hidden; }
+.intro-word {
+  display: block; padding-left: clamp(14px, 3vw, 30px); white-space: nowrap;
+  font-size: clamp(19px, 4.6vw, 46px); font-weight: 650; line-height: 1; letter-spacing: 0.3em; margin-right: -0.3em;
+  animation: intro-word-in 1100ms cubic-bezier(0.2, 0.8, 0.2, 1) 1400ms both;
+}
+.intro-brand-leaving .intro-mark { color: #111318; }
+.intro-brand-leaving .intro-mark svg { opacity: 0; }
+.intro-brand-leaving .intro-word { animation: intro-word-out 520ms cubic-bezier(0.6, 0, 0.4, 1) both; }
+
+@keyframes intro-streak {
+  0% { transform: scale(0, 1); opacity: 0; }
+  35% { transform: scale(90, 1); opacity: 1; }
+  100% { transform: scale(0, 0.5); opacity: 0; }
+}
+@keyframes intro-mark-settle {
+  0% { transform: scale(0.55) rotate(-6deg); filter: blur(6px); }
+  55% { transform: scale(1.1) rotate(0.5deg); filter: blur(0); }
+  100% { transform: scale(1) rotate(0); filter: blur(0); }
+}
+@keyframes intro-shard-in {
+  from { opacity: 0; transform: translateX(var(--dx)) scale(0.05) rotate(var(--r)); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes intro-word-open { to { grid-template-columns: 1fr; } }
+@keyframes intro-word-in {
+  from { opacity: 0; transform: translateX(-55%) scale(0.94); clip-path: inset(0 100% 0 0); filter: blur(5px); letter-spacing: 0.6em; }
+  to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); filter: blur(0); letter-spacing: 0.3em; }
+}
+@keyframes intro-word-out {
+  from { opacity: 1; clip-path: inset(0 0 0 0); transform: none; }
+  to { opacity: 0; clip-path: inset(0 0 0 100%); transform: translateX(12%); }
+}
+
+/* Homepage reveal during the hand-off */
+.intro-home[data-intro-reveal] header { animation: intro-rise-down 800ms cubic-bezier(0.2, 0.8, 0.2, 1) 520ms both; }
+.intro-home[data-intro-reveal] main > section:first-of-type > div > div:first-child > * {
+  animation: intro-rise 850ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.intro-home[data-intro-reveal] main > section:first-of-type > div > div:first-child > :nth-child(1) { animation-delay: 560ms; }
+.intro-home[data-intro-reveal] main > section:first-of-type > div > div:first-child > :nth-child(2) { animation-delay: 660ms; }
+.intro-home[data-intro-reveal] main > section:first-of-type > div > div:first-child > :nth-child(3) { animation-delay: 760ms; }
+.intro-home[data-intro-reveal] main > section:first-of-type > div > div:first-child > :nth-child(4) { animation-delay: 860ms; }
+.intro-home[data-intro-reveal] main > section:first-of-type > div > :nth-child(2) {
+  animation: intro-rise-scale 1000ms cubic-bezier(0.2, 0.8, 0.2, 1) 780ms both;
+}
+@keyframes intro-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes intro-rise-down { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+@keyframes intro-rise-scale { from { opacity: 0; transform: translateY(26px) scale(0.97); } to { opacity: 1; transform: none; } }
+
+/* Reduced motion: same sequence, opacity only. IntroExperience mirrors prefers-reduced-motion onto [data-intro-reduced]. */
+[data-intro-reduced] .intro-hint::after, [data-intro-reduced] .intro-fb-rig { animation: intro-fade-in 600ms ease both; }
+[data-intro-reduced] .intro-fb-rig { opacity: 0; transition: none; }
+[data-intro-reduced] .intro-fallback-on .intro-fb-rig { transform: none; }
+[data-intro-reduced] .intro-brand::before { display: none; }
+[data-intro-reduced] .intro-mark { transition: color 400ms ease; }
+[data-intro-reduced] .intro-mark svg { animation: intro-fade-in 500ms ease both; opacity: 0; transition: opacity 200ms ease 200ms; }
+[data-intro-reduced] .intro-brand-leaving .intro-mark svg { animation: none; opacity: 0; }
+[data-intro-reduced] .intro-shard { animation: none; }
+[data-intro-reduced] .intro-word-clip { animation: none; grid-template-columns: 1fr; }
+[data-intro-reduced] .intro-word { opacity: 0; animation: intro-fade-in 500ms ease 450ms forwards; }
+[data-intro-reduced] .intro-brand-leaving .intro-word { animation: none; opacity: 0; transition: opacity 300ms ease; }
+[data-intro-reduced] .intro-bg { transition: opacity 450ms ease; }
+[data-intro-reduced] .intro-home[data-intro-reveal] header,
+[data-intro-reduced] .intro-home[data-intro-reveal] main > section:first-of-type > div > div:first-child > *,
+[data-intro-reduced] .intro-home[data-intro-reveal] main > section:first-of-type > div > :nth-child(2) { animation: intro-fade-in 450ms ease both; opacity: 0; }
